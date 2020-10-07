@@ -8,10 +8,11 @@ class BoxSerializer(serializers.ModelSerializer):
         fields = (
             "name",
             "address",
-            "certification_code",
+            "coach",
         )
         read_only_fields = (
             "id",
             "created",
             "updated",
+            "certification_code",
         )

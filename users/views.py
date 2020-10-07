@@ -59,7 +59,7 @@ class UserViewSet(ModelViewSet):
     @action(detail=False, methods=["post"])
     def box_authentication(self, request):
 
-        certification_code = request.data("certification_code", None)
+        certification_code = request.data.get("certification_code", None)
         if certification_code is not None:
             try:
                 box = Box.objects.get(certification_code=certification_code)
@@ -72,29 +72,3 @@ class UserViewSet(ModelViewSet):
                 return Response(status=status.HTTP_404_NOT_FOUND)
         else:
             return Response(status=status.HTTP_400_BAD_REQUEST)
-
-
-# class MyView(APIView):
-
-#     permission_classes = [IsAuthenticated]
-
-#     def get(self, request):
-#         user = request.user
-#         serialized_user = ReadUserSerializer(user).data
-#         return Response(serialized_user, status=status.HTTP_200_OK)
-
-
-# @api_view(["GET", "POST"])
-# def get_users(request):
-
-#     if request.method == "GET":
-#         users = User.objects.all()
-#         serialized_users = ReadUserSerializer(users, many=True).data
-#         return Response(data=serialized_users, status=status.HTTP_200_OK)
-#     elif request.method == "POST":
-#         serializer = WriteUserSerializer(data=request.data)
-#         print(request.data)
-#         if serializer.is_valid():
-#             user = serializer.save()
-#             print(user)
-#             return Response()

@@ -1,8 +1,9 @@
-from django.urls import path
+from rest_framework import routers
 from . import views
 
 app_name = "boxes"
 
-urlpatterns = [
-    path("", views.get_boxes),
-]
+router = routers.DefaultRouter()
+router.register("", views.BoxViewSet)
+
+urlpatterns = router.urls
