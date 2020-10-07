@@ -24,3 +24,9 @@ class WodSerializer(serializers.ModelSerializer):
             "round_sec",
             "box",
         )
+
+    def create(self, validated_data):
+        request = self.context.get("request")
+        wod = Wod.objects.create(**validated_data, box=request.user.box)
+
+        return wod

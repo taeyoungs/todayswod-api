@@ -1,8 +1,9 @@
-from django.urls import path
+from rest_framework import routers
 from . import views
 
 app_name = "wods"
 
-urlpatterns = [
-    path("", views.get_wods),
-]
+router = routers.DefaultRouter()
+router.register("", views.WodViewSet)
+
+urlpatterns = router.urls
