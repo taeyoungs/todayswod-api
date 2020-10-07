@@ -46,6 +46,7 @@ PROJECT_APPS = [
     "wods.apps.WodsConfig",
     "reservations.apps.ReservationsConfig",
     "schedules.apps.SchedulesConfig",
+    "alerts.apps.AlertsConfig",
 ]
 
 THIRD_PARTY_APPS = [
