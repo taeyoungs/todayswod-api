@@ -3,11 +3,17 @@ from .models import User
 
 
 class UserSerializer(serializers.ModelSerializer):
+
+    password = serializers.CharField(write_only=True)
+
     class Meta:
         model = User
         fields = (
+            "username",
+            "first_name",
             "last_name",
-            "is_owner",
+            "email",
+            "password",
             "box",
             "gender",
         )
@@ -16,3 +22,10 @@ class UserSerializer(serializers.ModelSerializer):
             "created",
             "updated",
         )
+
+    def create(self, validated_data):
+        password = validated_data.get("password")
+        user = super().create(validated_data)
+        user.set_password(password)
+        user.save()
+        return user

@@ -9,4 +9,7 @@ class BoxAdmin(admin.ModelAdmin):
         "name",
         "address",
         "certification_code",
+        "owner",
     )
+
+    filter_horizontal = ("coach",)

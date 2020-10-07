@@ -9,6 +9,10 @@ class Box(CoreModel):
     name = models.CharField(max_length=120)
     address = models.CharField(max_length=240)
     certification_code = models.IntegerField()
+    owner = models.ForeignKey(
+        "users.User", on_delete=models.CASCADE, related_name="box_owner"
+    )
+    coach = models.ManyToManyField("users.User", related_name="box_coaches")
 
     def __str__(self):
 

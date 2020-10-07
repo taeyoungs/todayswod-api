@@ -9,7 +9,6 @@ class CustomUserAdmin(UserAdmin):
     list_display = UserAdmin.list_display + (
         "gender",
         "box",
-        "is_owner",
     )
 
     fieldsets = UserAdmin.fieldsets + (
@@ -17,7 +16,6 @@ class CustomUserAdmin(UserAdmin):
             "Custom Profile",
             {
                 "fields": (
-                    "is_owner",
                     "gender",
                     "box",
                 ),
