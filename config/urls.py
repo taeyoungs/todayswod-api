@@ -8,4 +8,7 @@ urlpatterns = [
     path("api/v1/wods/", include("wods.urls", namespace="wods")),
     path("api/v1/memberships/", include("memberships.urls", namespace="memberships")),
     path("api/v1/schedules/", include("schedules.urls", namespace="schedules")),
+    path(
+        "api/v1/reservations/", include("reservations.urls", namespace="reservations")
+    ),
 ]

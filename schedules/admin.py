@@ -6,7 +6,8 @@ from .models import Schedule
 class ScheduleAdmin(admin.ModelAdmin):
 
     list_display = (
-        "time",
+        "start_time",
+        "end_time",
         "user_limit",
         "box",
         "coach",

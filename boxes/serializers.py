@@ -8,6 +8,7 @@ class BoxSerializer(serializers.ModelSerializer):
         fields = (
             "name",
             "address",
+            "owner",
             "coach",
         )
         read_only_fields = (

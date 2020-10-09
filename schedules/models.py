@@ -4,7 +4,8 @@ from core.models import CoreModel
 
 class Schedule(CoreModel):
 
-    time = models.TimeField()
+    start_time = models.TimeField()
+    end_time = models.TimeField()
     user_limit = models.IntegerField()
     box = models.ForeignKey(
         "boxes.Box", on_delete=models.CASCADE, related_name="schedules"
@@ -12,3 +13,7 @@ class Schedule(CoreModel):
     coach = models.ForeignKey(
         "users.User", on_delete=models.CASCADE, related_name="schedules"
     )
+
+    def __str__(self):
+        # print(self.reservations)
+        return f"{self.start_time} ~ {self.end_time}"

@@ -14,6 +14,7 @@ class Reservation(CoreModel):
         (STATE_CANCELED, "Canceled"),
     )
 
+    date = models.DateField()
     user = models.ForeignKey(
         "users.User", on_delete=models.CASCADE, related_name="reservations"
     )
@@ -23,3 +24,7 @@ class Reservation(CoreModel):
     schedule = models.ForeignKey(
         "schedules.Schedule", on_delete=models.CASCADE, related_name="reservations"
     )
+
+    def __str__(self):
+
+        return f"{self.date} / {self.user} / {self.schedule}"

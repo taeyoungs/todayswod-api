@@ -7,6 +7,7 @@ class ReservationAdmin(admin.ModelAdmin):
 
     list_display = (
         "user",
+        "date",
         "state",
         "schedule",
     )
