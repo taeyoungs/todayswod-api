@@ -18,4 +18,5 @@ class WodAdmin(admin.ModelAdmin):
         "rounds",
         "rest_sec",
         "round_sec",
+        "date",
     )

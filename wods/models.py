@@ -20,6 +20,7 @@ class Wod(CoreModel):
     rounds = models.IntegerField(null=True, blank=True)
     rest_sec = models.IntegerField(null=True, blank=True)
     round_sec = models.IntegerField(null=True, blank=True)
+    date = models.DateField()
 
     def __str__(self):
         return self.title.name

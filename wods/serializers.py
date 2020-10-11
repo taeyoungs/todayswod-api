@@ -23,6 +23,7 @@ class WodSerializer(serializers.ModelSerializer):
             "rest_sec",
             "round_sec",
             "box",
+            "date",
         )
 
     def create(self, validated_data):
