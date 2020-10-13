@@ -1,8 +1,9 @@
-from django.urls import path
+from rest_framework import routers
 from . import views
 
 app_name = "memberships"
 
-urlpatterns = [
-    path("", views.get_memberships),
-]
+router = routers.DefaultRouter()
+router.register("", views.MembershipViewSet)
+
+urlpatterns = router.urls

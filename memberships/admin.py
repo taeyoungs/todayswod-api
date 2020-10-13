@@ -7,6 +7,7 @@ class MembershipAdmin(admin.ModelAdmin):
 
     list_display = (
         "title",
+        "state",
         "cnt",
         "start_term",
         "end_term",
