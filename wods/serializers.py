@@ -15,6 +15,7 @@ class WodSerializer(serializers.ModelSerializer):
             "updated",
         )
         fields = (
+            "id",
             "title",
             "content",
             "comment",

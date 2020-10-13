@@ -24,13 +24,6 @@ class BoxViewSet(ModelViewSet):
             permission_classes = [IsAdminUser]
         return [permission() for permission in permission_classes]
 
-    def partial_update(self, request, *args, **kwargs):
-        instance = self.get_object()
-        serializer = self.serializer_class(instance, data=request.data, partial=True)
-        serializer.is_valid(raise_exception=True)
-        serializer.save()
-        return Response(serializer.data)
-
     @action(detail=True, methods=["get"], url_path="coach/(?P<coach_pk>[^/.]+)")
     def coach(self, request, pk, coach_pk):
         if coach_pk is not None:

@@ -15,13 +15,14 @@ class ScheduleViewSet(ModelViewSet):
 
     def get_permissions(self):
         if self.action == "list" or self.action == "retrieve":
-            permission_classes = [IsAuthenticated]
+            permission_classes = [AllowAny]
         elif (
-            self.action == "delete"
+            self.action == "destroy"
             or self.action == "partial_update"
+            or self.action == "update"
             or self.action == "create"
         ):
-            permission_classes = [IsBoxOwner, IsAdminUser]
+            permission_classes = [IsBoxOwner]
         else:
             permission_classes = [IsAdminUser]
 

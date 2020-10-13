@@ -14,18 +14,18 @@ class WodViewSet(ModelViewSet):
     serializer_class = WodSerializer
 
     def get_permissions(self):
+
         if self.action == "list" or self.action == "retrieve":
             permission_classes = [AllowAny]
-        else:
+        elif (
+            self.action == "create"
+            or self.action == "destroy"
+            or self.action == "partial_update"
+        ):
             permission_classes = [IsBoxOwner]
+        else:
+            permission_classes = [IsAdminUser]
         return [permission() for permission in permission_classes]
-
-    def partial_update(self, request, *args, **kwargs):
-        instance = self.get_object()
-        serializer = self.serializer_class(instance, data=request.data, partial=True)
-        serializer.is_valid(raise_exception=True)
-        serializer.save()
-        return Response(serializer.data)
 
     def create(self, request, *args, **kwargs):
         # 1. 하루에 1개의 예약만 가능하게끔 - V

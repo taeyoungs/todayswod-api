@@ -8,6 +8,7 @@ from .serializers import ReservationSerializer
 from .models import Reservation
 from .permissions import IsSelf, IsSelfOrBoxOwnerOrAdminUser
 from wods.models import Wod
+from wods.permissions import IsBoxOwner
 
 
 class ReservationViewSet(ModelViewSet):
@@ -19,7 +20,7 @@ class ReservationViewSet(ModelViewSet):
         if (
             self.action == "list"
             or self.action == "retrieve"
-            or self.action == "delete"
+            or self.action == "destroy"
             or self.action == "expiration"
         ):
             permission_classes = [IsSelfOrBoxOwnerOrAdminUser]
