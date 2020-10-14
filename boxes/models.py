@@ -12,7 +12,7 @@ class Box(CoreModel):
     owner = models.ForeignKey(
         "users.User", on_delete=models.CASCADE, related_name="box_owner"
     )
-    coach = models.ManyToManyField("users.User", related_name="box_coaches")
+    coach = models.ManyToManyField("users.User", related_name="box_coaches", blank=True)
 
     def __str__(self):
 

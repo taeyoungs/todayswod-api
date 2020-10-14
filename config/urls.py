@@ -11,4 +11,5 @@ urlpatterns = [
     path(
         "api/v1/reservations/", include("reservations.urls", namespace="reservations")
     ),
+    path("api/v1/alerts/", include("alerts.urls", namespace="alerts")),
 ]

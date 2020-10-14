@@ -12,3 +12,4 @@ class User(AbstractUser):
         null=True,
         related_name="users",
     )
+    has_new_alert = models.BooleanField(default=False)

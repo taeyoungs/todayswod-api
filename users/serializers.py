@@ -16,11 +16,13 @@ class UserSerializer(serializers.ModelSerializer):
             "password",
             "box",
             "gender",
+            "has_new_alert",
         )
         read_only_fields = (
             "id",
             "created",
             "updated",
+            "has_new_alert",
         )
 
     def create(self, validated_data):

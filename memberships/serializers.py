@@ -24,7 +24,13 @@ class MembershipSerializer(serializers.ModelSerializer):
 
     def create(self, validated_data):
         request = self.context.get("request")
-        user_pk = request.data.get("user_pk")
-        user = User.objects.get(pk=user_pk)
-        membership = Membership.objects.create(**validated_data, user=user)
-        return membership
+        user_pk = request.data.get("user_pk", None)
+        if user_pk is not None:
+            try:
+                user = User.objects.get(pk=user_pk)
+                membership = Membership.objects.create(**validated_data, user=user)
+                return membership
+            except User.DoesNotExist:
+                raise serializers.ValidationError("존재하는 사용자 정보 없음")
+        else:
+            raise serializers.ValidationError("사용자 ID 정보 없음")

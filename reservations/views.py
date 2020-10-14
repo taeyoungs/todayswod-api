@@ -39,7 +39,10 @@ class ReservationViewSet(ModelViewSet):
                 request.user.box.wods.get(date=date)
                 try:
                     r = request.user.reservations.get(date=date)
-                    return Response(status=status.HTTP_400_BAD_REQUEST)
+                    return Response(
+                        status=status.HTTP_400_BAD_REQUEST,
+                        data={"message": "이미 해당 날짜 예약이 존재합니다."},
+                    )
                 except Reservation.DoesNotExist:
                     serializer = self.get_serializer(data=request.data)
                     serializer.is_valid()

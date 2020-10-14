@@ -9,6 +9,7 @@ class CustomUserAdmin(UserAdmin):
     list_display = UserAdmin.list_display + (
         "gender",
         "box",
+        "has_new_alert",
     )
 
     fieldsets = UserAdmin.fieldsets + (
@@ -18,6 +19,7 @@ class CustomUserAdmin(UserAdmin):
                 "fields": (
                     "gender",
                     "box",
+                    "has_new_alert",
                 ),
             },
         ),

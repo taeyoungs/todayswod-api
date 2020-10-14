@@ -9,5 +9,6 @@ class AlertAdmin(admin.ModelAdmin):
         "alert_type",
         "title",
         "content",
+        "user",
         "box",
     )
