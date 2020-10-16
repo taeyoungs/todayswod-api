@@ -13,6 +13,7 @@ class MembershipSerializer(serializers.ModelSerializer):
             "cnt",
             "start_term",
             "end_term",
+            "hold_date",
             "user",
         )
         read_only_fields = (

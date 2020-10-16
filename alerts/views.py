@@ -24,19 +24,16 @@ class AlertViewSet(ModelViewSet):
 
         # 박스 주인은 자신에 대한 알림이 존재할까?
 
+        # 사용자 전용 알림과 사용자가 속한 박스 알림만 QuerySet으로
         user_alerts = Alert.objects.filter(user=request.user)
         box_alerts = Alert.objects.filter(box=request.user.box)
         alerts = user_alerts.union(box_alerts).order_by("-updated")
 
         queryset = self.filter_queryset(alerts)
 
+        # 알림 확인
         request.user.has_new_alert = False
         request.user.save()
-
-        # user = User.objects.get(pk=request.user.pk)
-        # print(user, vars(user))
-        # user.has_new_alert = False
-        # user.save()
 
         page = self.paginate_queryset(queryset)
         if page is not None:
@@ -55,14 +52,10 @@ class AlertViewSet(ModelViewSet):
         serializer.is_valid(raise_exception=True)
         self.perform_create(serializer)
 
+        # 해당 박스 소속인 사용자들에게 새로운 알림이 있다고 표시
         User.objects.filter(box=request.user.box).update(has_new_alert=True)
 
         headers = self.get_success_headers(serializer.data)
         return Response(
             serializer.data, status=status.HTTP_201_CREATED, headers=headers
         )
-
-    # def retrieve(self, request, *args, **kwargs):
-    #     instance = self.get_object()
-    #     serializer = self.get_serializer(instance)
-    #     return Response(serializer.data)

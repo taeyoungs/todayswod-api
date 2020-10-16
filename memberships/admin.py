@@ -11,5 +11,6 @@ class MembershipAdmin(admin.ModelAdmin):
         "cnt",
         "start_term",
         "end_term",
+        "hold_date",
         "user",
     )

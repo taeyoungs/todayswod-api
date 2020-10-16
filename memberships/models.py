@@ -14,8 +14,13 @@ class Membership(CoreModel):
 
     STATE_PROGRESS = "progress"
     STATE_EXPIRED = "expired"
+    STATE_HOLDING = "holding"
 
-    STATE_CHOICES = ((STATE_PROGRESS, "Progress"), (STATE_EXPIRED, "Expired"))
+    STATE_CHOICES = (
+        (STATE_PROGRESS, "Progress"),
+        (STATE_EXPIRED, "Expired"),
+        (STATE_HOLDING, "Holding"),
+    )
 
     title = models.CharField(max_length=80, choices=TITLE_CHOICES)
     state = models.CharField(
@@ -24,6 +29,7 @@ class Membership(CoreModel):
     cnt = models.IntegerField(null=True, blank=True)
     start_term = models.DateField(null=True, blank=True)
     end_term = models.DateField(null=True, blank=True)
+    hold_date = models.DateField(null=True, blank=True)
     user = models.ForeignKey(
         "users.User", related_name="memberships", on_delete=models.CASCADE
     )
