@@ -31,12 +31,19 @@ class ScheduleViewSet(ModelViewSet):
     # Override로 날짜 정보 넘겨주기
     def list(self, request, *args, **kwargs):
         date = request.GET.get("date", None)
-        queryset = self.filter_queryset(self.get_queryset())
+        if date is not None:
+            schedules = Schedule.objects.filter(box=request.user.box)
+            queryset = self.filter_queryset(schedules)
 
-        page = self.paginate_queryset(queryset)
-        if page is not None:
-            serializer = self.get_serializer(page, many=True)
-            return self.get_paginated_response(serializer.data)
+            page = self.paginate_queryset(queryset)
+            if page is not None:
+                serializer = self.get_serializer(page, many=True)
+                return self.get_paginated_response(serializer.data)
 
-        serializer = self.get_serializer(queryset, many=True, context={"date": date})
-        return Response(serializer.data)
+            # 예약 인원 표시하는 필드를 위한 date 정보
+            serializer = self.get_serializer(
+                queryset, many=True, context={"date": date}
+            )
+            return Response(serializer.data)
+        else:
+            return Response(status=status.HTTP_400_BAD_REQUEST)

@@ -3,12 +3,14 @@ from rest_framework import serializers
 from .models import Reservation
 from schedules.models import Schedule
 from schedules.serializers import ScheduleSerializer
+from users.serializers import UserSerializer
 from memberships.models import Membership
 
 
 class ReservationSerializer(serializers.ModelSerializer):
 
     schedule = ScheduleSerializer(read_only=True)
+    user = UserSerializer(read_only=True)
 
     class Meta:
         model = Reservation
@@ -16,6 +18,7 @@ class ReservationSerializer(serializers.ModelSerializer):
             "id",
             "date",
             "state",
+            "user",
             "schedule",
         )
         read_only_fields = (
@@ -28,6 +31,7 @@ class ReservationSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         request = self.context.get("request")
         schedule_pk = request.data.get("schedule_pk")
+        # 예약하려는 날짜 정보
         date = request.data.get("date")
         try:
             user_membership = Membership.objects.get(user=request.user)
@@ -39,11 +43,11 @@ class ReservationSerializer(serializers.ModelSerializer):
                 raise serializers.ValidationError("홀딩 또는 만료 상태")
 
             # 회원권 종류에 따른 예약 가능 여부 체크
-            now = timezone.now()
+            # now = timezone.now()
             if user_membership.title == "term":
                 if (
-                    user_membership.start_term > now.date()
-                    and user_membership.end_term < now.date()
+                    user_membership.start_term > date
+                    and user_membership.end_term < date
                 ):
                     raise serializers.ValidationError("회원권 갱신 필요")
             else:

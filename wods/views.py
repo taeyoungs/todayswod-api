@@ -1,3 +1,5 @@
+from datetime import timedelta
+from django.utils import timezone
 from rest_framework import status
 from rest_framework.viewsets import ModelViewSet
 from rest_framework.decorators import api_view
@@ -26,6 +28,39 @@ class WodViewSet(ModelViewSet):
         else:
             permission_classes = [IsAdminUser]
         return [permission() for permission in permission_classes]
+
+    def list(self, request, *args, **kwargs):
+
+        # 박스 주인일 경우 자신의 박스 와드 전체 목록 조회
+        if request.user == request.user.box.owner:
+            wods = Wod.objects.filter(box=request.user.box)
+            queryset = self.filter_queryset(wods)
+
+            page = self.paginate_queryset(queryset)
+            if page is not None:
+                serializer = self.get_serializer(page, many=True)
+                return self.get_paginated_response(serializer.data)
+
+            serializer = self.get_serializer(queryset, many=True)
+            return Response(serializer.data)
+        # 박스를 이용하는 사용자일 경우 앞 뒤로 일주일치 와드 조회
+        else:
+            now = timezone.now()
+            start_date = now.date() - timedelta(days=7)
+            end_date = now.date() + timedelta(days=7)
+            wods = Wod.objects.filter(
+                date__gte=start_date, date__lte=end_date, box=request.user.box
+            )
+
+            queryset = self.filter_queryset(wods)
+
+            page = self.paginate_queryset(queryset)
+            if page is not None:
+                serializer = self.get_serializer(page, many=True)
+                return self.get_paginated_response(serializer.data)
+
+            serializer = self.get_serializer(queryset, many=True)
+            return Response(serializer.data)
 
     def create(self, request, *args, **kwargs):
         # 1. 하루에 1개의 예약만 가능하게끔 - V

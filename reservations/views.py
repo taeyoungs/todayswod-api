@@ -9,6 +9,7 @@ from .models import Reservation
 from .permissions import IsSelf, IsSelfOrBoxOwnerOrAdminUser
 from wods.models import Wod
 from wods.permissions import IsBoxOwner
+from schedules.models import Schedule
 
 
 class ReservationViewSet(ModelViewSet):
@@ -29,6 +30,44 @@ class ReservationViewSet(ModelViewSet):
         else:
             permission_classes = [IsSelf]
         return [permission() for permission in permission_classes]
+
+    def list(self, request, *args, **kwargs):
+
+        if bool(request.user == request.user.box.owner) or bool(
+            request.user and request.user.is_staff
+        ):
+            # 에러 핸들링 필요
+            date = request.GET.get("date", None)
+            schedule_pk = request.GET.get("pk", None)
+            if date is None or schedule_pk is None:
+                return Response(status=status.HTTP_400_BAD_REQUEST)
+            try:
+                schedule = Schedule.objects.get(pk=schedule_pk)
+                reservations = Reservation.objects.filter(date=date, schedule=schedule)
+                queryset = self.filter_queryset(reservations)
+
+                page = self.paginate_queryset(queryset)
+                if page is not None:
+                    serializer = self.get_serializer(page, many=True)
+                    return self.get_paginated_response(serializer.data)
+
+                serializer = self.get_serializer(queryset, many=True)
+                return Response(serializer.data)
+            except Schedule.DoesNotExist:
+                return Response(
+                    status=status.HTTP_404_NOT_FOUND, data="Schedule does not exist"
+                )
+        else:
+            reservations = Reservation.objects.filter(user=request.user)
+            queryset = self.filter_queryset(reservations)
+
+            page = self.paginate_queryset(queryset)
+            if page is not None:
+                serializer = self.get_serializer(page, many=True)
+                return self.get_paginated_response(serializer.data)
+
+            serializer = self.get_serializer(queryset, many=True)
+            return Response(serializer.data)
 
     def create(self, request, *args, **kwargs):
         # 1. 하루에 1개의 예약만 가능하게끔 - V

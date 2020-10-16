@@ -10,6 +10,7 @@ from .serializers import UserSerializer
 from .permissions import IsSelf
 from .models import User
 from boxes.models import Box
+from alerts.permissions import IsBoxOwnerOrAdmin
 
 
 class UserViewSet(ModelViewSet):
@@ -19,7 +20,7 @@ class UserViewSet(ModelViewSet):
 
     def get_permissions(self):
         if self.action == "list":
-            permission_classes = [IsAdminUser]
+            permission_classes = [IsBoxOwnerOrAdmin]
         elif (
             self.action == "retrieve"
             or self.action == "create"
@@ -32,12 +33,31 @@ class UserViewSet(ModelViewSet):
             permission_classes = [IsSelf]
         return [permission() for permission in permission_classes]
 
-    def partial_update(self, request, *args, **kwargs):
-        instance = self.get_object()
-        serializer = self.serializer_class(instance, data=request.data, partial=True)
-        serializer.is_valid(raise_exception=True)
-        serializer.save()
-        return Response(serializer.data)
+    def list(self, request, *args, **kwargs):
+
+        # 박스 주인일 경우
+        if request.user == request.user.box.owner:
+            users = User.objects.filter(box=request.user.box)
+            queryset = self.filter_queryset(users)
+
+            page = self.paginate_queryset(queryset)
+            if page is not None:
+                serializer = self.get_serializer(page, many=True)
+                return self.get_paginated_response(serializer.data)
+
+            serializer = self.get_serializer(queryset, many=True)
+            return Response(serializer.data)
+        # Admin일 경우
+        else:
+            queryset = self.filter_queryset(self.get_queryset())
+
+            page = self.paginate_queryset(queryset)
+            if page is not None:
+                serializer = self.get_serializer(page, many=True)
+                return self.get_paginated_response(serializer.data)
+
+            serializer = self.get_serializer(queryset, many=True)
+            return Response(serializer.data)
 
     @action(detail=False, methods=["post"])
     def token(self, request):
