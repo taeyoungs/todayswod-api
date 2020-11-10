@@ -10,6 +10,8 @@ class CustomUserAdmin(UserAdmin):
         "gender",
         "box",
         "has_new_alert",
+        "registration_state",
+        "certification_number",
     )
 
     fieldsets = UserAdmin.fieldsets + (
@@ -20,6 +22,8 @@ class CustomUserAdmin(UserAdmin):
                     "gender",
                     "box",
                     "has_new_alert",
+                    "registration_state",
+                    "certification_number",
                 ),
             },
         ),

@@ -25,7 +25,11 @@ SECRET_KEY = "ehs8zvu0*f6!=0x8yb6ht!z4b)9^q6)h=(592_f8f-^cb7efc@"
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = [
+    "172.30.1.25",
+    "192.168.0.25",
+    "127.0.0.1",
+]
 
 
 # Application definition
@@ -49,7 +53,7 @@ PROJECT_APPS = [
     "alerts.apps.AlertsConfig",
 ]
 
-THIRD_PARTY_APPS = ["rest_framework", "jwt"]
+THIRD_PARTY_APPS = ["rest_framework", "jwt", "requests"]
 
 INSTALLED_APPS = DJANGO_APPS + PROJECT_APPS + THIRD_PARTY_APPS
 

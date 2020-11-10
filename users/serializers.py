@@ -9,6 +9,7 @@ class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = (
+            "id",
             "username",
             "first_name",
             "last_name",
@@ -17,12 +18,14 @@ class UserSerializer(serializers.ModelSerializer):
             "box",
             "gender",
             "has_new_alert",
+            "registration_state",
         )
         read_only_fields = (
             "id",
             "created",
             "updated",
             "has_new_alert",
+            "registration_state",
         )
 
     def create(self, validated_data):

@@ -8,6 +8,7 @@ from rest_framework.permissions import AllowAny
 from .serializers import MembershipSerializer
 from .models import Membership
 from alerts.models import Alert
+from users.models import User
 from wods.permissions import IsBoxOwner
 
 
@@ -48,6 +49,8 @@ class MembershipViewSet(ModelViewSet):
         if instance.end_term < now.date():
             instance.state = Membership.STATE_EXPIRED
             instance.save()
+            request.user.registration_state = User.STATE_UNREGISTERED
+            request.user.save()
         serializer = self.get_serializer(instance)
         return Response(serializer.data)
 

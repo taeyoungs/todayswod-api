@@ -8,7 +8,8 @@ from users.models import User
 class JWTAuthentication(authentication.BaseAuthentication):
     def authenticate(self, request):
         token = request.META.get("HTTP_AUTHORIZATION")
-        if token is not None:
+        # print(type(token))
+        if token is not None and token != "null":
             berear, encoded_jwt = token.split(" ")
             decoded_jwt = jwt.decode(
                 encoded_jwt, settings.SECRET_KEY, algorithms=["HS256"]

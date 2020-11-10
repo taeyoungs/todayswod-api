@@ -1,4 +1,7 @@
 import jwt
+import requests
+import os
+from random import randrange
 from django.conf import settings
 from django.contrib.auth import authenticate
 from rest_framework import status
@@ -20,7 +23,7 @@ class UserViewSet(ModelViewSet):
 
     def get_permissions(self):
         if self.action == "list":
-            permission_classes = [IsBoxOwnerOrAdmin]
+            permission_classes = [IsAdminUser]
         elif (
             self.action == "retrieve"
             or self.action == "create"
@@ -37,6 +40,7 @@ class UserViewSet(ModelViewSet):
 
         # 박스 주인일 경우
         if request.user == request.user.box.owner:
+            # if False:
             users = User.objects.filter(box=request.user.box)
             queryset = self.filter_queryset(users)
 
@@ -86,9 +90,77 @@ class UserViewSet(ModelViewSet):
                 if box is not None:
                     user = request.user
                     user.box = box
+                    user.registration_state = User.STATE_PENDING
                     user.save()
                     return Response(status=status.HTTP_200_OK)
             except Box.DoesNotExist:
                 return Response(status=status.HTTP_404_NOT_FOUND)
+        else:
+            return Response(status=status.HTTP_400_BAD_REQUEST)
+
+    @action(detail=True, methods=["get"])
+    def enrollment(self, request, pk):
+        action = request.GET.get("action", None)
+        user = self.get_object()
+        # action: confirm / cancel
+
+        if action is not None and user is not None:
+            if action == "confirm":
+                user.registration_state = User.STATE_REGISTERED
+                user.save()
+            elif action == "cancel":
+                user.registration_state = User.STATE_UNREGISTERED
+                user.box = None
+                user.save()
+            else:
+                return Response(status=status.HTTP_400_BAD_REQUEST)
+            return Response(status=status.HTTP_200_OK)
+        else:
+            return Response(status=status.HTTP_400_BAD_REQUEST)
+
+    @action(detail=False, methods=["post"])
+    def pw_reset(self, request):
+        email = request.data.get("email", None)
+        certification_number = randrange(100000, 1000000)
+        if email is not None:
+            try:
+                user = User.objects.get(username=email)
+                user.certification_number = certification_number
+                user.save()
+                results = requests.post(
+                    "https://api.mailgun.net/v3/sandbox84ef292259734d5baaa226547f1981b4.mailgun.org/messages",
+                    auth=("api", os.environ.get("MAILGUN_API_KEY")),
+                    data={
+                        "from": "오늘의 와드 <mailgun@sandbox84ef292259734d5baaa226547f1981b4.mailgun.org>",
+                        "to": [
+                            email,
+                        ],
+                        "subject": "비밀번호 재설정 인증번호",
+                        "text": f"인증번호: {certification_number}",
+                    },
+                )
+                print(results)
+                return Response(status=status.HTTP_200_OK)
+            except User.DoesNotExist:
+                return Response(status=status.HTTP_404_NOT_FOUND)
+
+        else:
+            return Response(status=status.HTTP_400_BAD_REQUEST)
+
+    @action(detail=False, methods=["post"])
+    def certification(self, request):
+        certification_number = request.data.get("certification_number", None)
+        email = request.data.get("email", None)
+
+        print(certification_number, email)
+
+        if certification_number is not None and email is not None:
+            user = User.objects.get(username=email)
+            if user.certification_number != int(certification_number):
+                return Response(status=status.HTTP_401_UNAUTHORIZED)
+            else:
+                # user.certification_number = None
+                # user.save()
+                return Response(status=status.HTTP_200_OK)
         else:
             return Response(status=status.HTTP_400_BAD_REQUEST)
