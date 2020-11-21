@@ -10,6 +10,7 @@ from .models import Membership
 from alerts.models import Alert
 from users.models import User
 from wods.permissions import IsBoxOwner
+from reservations.permissions import IsSelfOrBoxOwnerOrAdminUser
 
 
 class MembershipViewSet(ModelViewSet):
@@ -18,17 +19,20 @@ class MembershipViewSet(ModelViewSet):
     serializer_class = MembershipSerializer
 
     def get_permissions(self):
-        if self.action == "list" or self.action == "retrieve":
+        if self.action == "list":
+            permission_classes = [AllowAny]
+        elif self.action == "retrieve":
             permission_classes = [AllowAny]
         else:
             permission_classes = [AllowAny]
         return [permission() for permission in permission_classes]
 
     def retrieve(self, request, *args, **kwargs):
-        # ToDo: 3일전 or 3개 남았을 때 알림을 생성
-        # ToDo: 횟수랑 기간이랑 구별
+        pk = kwargs.get("pk", None)
         now = timezone.now()
-        instance = self.get_object()
+        # instance = self.get_object()
+        instance = Membership.objects.get(user=pk)
+
         # 원래 Push 알림으로 해야하는 부분
         """
         two_days_ago = instance.end_term - datetime.timedelta(days=2)

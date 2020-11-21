@@ -1,11 +1,35 @@
 from rest_framework import serializers
 from boxes.serializers import BoxSerializer
-from .models import Wod
+from .models import Wod, WodSort
+
+
+class WodSortSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = WodSort
+        fields = ("name",)
+
+
+class WodExistSerializer(serializers.ModelSerializer):
+    title = WodSortSerializer()
+
+    class Meta:
+        model = Wod
+        fields = (
+            "id",
+            "date",
+            "title",
+        )
+        read_only_fields = (
+            "id",
+            "created",
+            "updated",
+        )
 
 
 class WodSerializer(serializers.ModelSerializer):
 
     box = BoxSerializer(read_only=True)
+    title = WodSortSerializer()
 
     class Meta:
         model = Wod

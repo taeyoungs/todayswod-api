@@ -74,7 +74,24 @@ class UserViewSet(ModelViewSet):
                 encoded_jwt = jwt.encode(
                     {"pk": user.pk}, settings.SECRET_KEY, algorithm="HS256"
                 )
-                return Response(data={"token": encoded_jwt, "pk": user.pk})
+                if user.box is None:
+                    return Response(
+                        data={
+                            "token": encoded_jwt,
+                            "userId": user.pk,
+                            "boxId": user.box,
+                            "registrationState": user.registration_state,
+                        }
+                    )
+                else:
+                    return Response(
+                        data={
+                            "token": encoded_jwt,
+                            "userId": user.pk,
+                            "boxId": user.box.pk,
+                            "registrationState": user.registration_state,
+                        }
+                    )
             else:
                 return Response(status=status.HTTP_401_UNAUTHORIZED)
         else:
@@ -84,6 +101,7 @@ class UserViewSet(ModelViewSet):
     def box_authentication(self, request):
 
         certification_code = request.data.get("certification_code", None)
+
         if certification_code is not None:
             try:
                 box = Box.objects.get(certification_code=certification_code)
@@ -92,7 +110,8 @@ class UserViewSet(ModelViewSet):
                     user.box = box
                     user.registration_state = User.STATE_PENDING
                     user.save()
-                    return Response(status=status.HTTP_200_OK)
+                    # print(user.box)
+                    return Response(status=status.HTTP_200_OK, data={"boxId": box.pk})
             except Box.DoesNotExist:
                 return Response(status=status.HTTP_404_NOT_FOUND)
         else:
@@ -127,19 +146,19 @@ class UserViewSet(ModelViewSet):
                 user = User.objects.get(username=email)
                 user.certification_number = certification_number
                 user.save()
-                results = requests.post(
-                    "https://api.mailgun.net/v3/sandbox84ef292259734d5baaa226547f1981b4.mailgun.org/messages",
-                    auth=("api", os.environ.get("MAILGUN_API_KEY")),
-                    data={
-                        "from": "오늘의 와드 <mailgun@sandbox84ef292259734d5baaa226547f1981b4.mailgun.org>",
-                        "to": [
-                            email,
-                        ],
-                        "subject": "비밀번호 재설정 인증번호",
-                        "text": f"인증번호: {certification_number}",
-                    },
-                )
-                print(results)
+                # results = requests.post(
+                #     "https://api.mailgun.net/v3/sandbox84ef292259734d5baaa226547f1981b4.mailgun.org/messages",
+                #     auth=("api", os.environ.get("MAILGUN_API_KEY")),
+                #     data={
+                #         "from": "오늘의 와드 <mailgun@sandbox84ef292259734d5baaa226547f1981b4.mailgun.org>",
+                #         "to": [
+                #             email,
+                #         ],
+                #         "subject": "비밀번호 재설정 인증번호",
+                #         "text": f"인증번호: {certification_number}",
+                #     },
+                # )
+                # print(results)
                 return Response(status=status.HTTP_200_OK)
             except User.DoesNotExist:
                 return Response(status=status.HTTP_404_NOT_FOUND)
@@ -162,5 +181,21 @@ class UserViewSet(ModelViewSet):
                 # user.certification_number = None
                 # user.save()
                 return Response(status=status.HTTP_200_OK)
+        else:
+            return Response(status=status.HTTP_400_BAD_REQUEST)
+
+    @action(detail=False, methods=["post"])
+    def pw_set(self, request):
+        email = request.data.get("email", None)
+        pw = request.data.get("pw", None)
+
+        if email is not None and pw is not None:
+            try:
+                user = User.objects.get(username=email)
+                user.set_password(pw)
+                user.save()
+                return Response(status=status.HTTP_200_OK)
+            except User.DoesNotExist:
+                return Response(status=status.HTTP_404_NOT_FOUND)
         else:
             return Response(status=status.HTTP_400_BAD_REQUEST)

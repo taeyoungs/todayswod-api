@@ -1,3 +1,4 @@
+from calendar import monthrange
 from django.utils import timezone
 from rest_framework import status
 from rest_framework.viewsets import ModelViewSet
@@ -58,7 +59,26 @@ class ReservationViewSet(ModelViewSet):
                     status=status.HTTP_404_NOT_FOUND, data="Schedule does not exist"
                 )
         else:
-            reservations = Reservation.objects.filter(user=request.user)
+            period = request.GET.get("period", None)
+            year, month = period.split("-")
+            _, lastDay = monthrange(int(year), int(month))
+
+            # 출석 안된 예약 모두 결석 처리
+            now = timezone.now()
+            Reservation.objects.filter(
+                date__lt=f"{now.date()}",
+                user=request.user,
+                state=Reservation.STATE_PENDING,
+            ).update(state=Reservation.STATE_CANCELED)
+
+            reservations = Reservation.objects.filter(
+                date__gte=f"{year}-{month}-1",
+                date__lte=f"{year}-{month}-{lastDay}",
+                user=request.user,
+            ).order_by("date")
+            # reservations = Reservation.objects.filter(user=request.user).order_by(
+            #     "date"
+            # )
             queryset = self.filter_queryset(reservations)
 
             page = self.paginate_queryset(queryset)
@@ -72,6 +92,7 @@ class ReservationViewSet(ModelViewSet):
     def create(self, request, *args, **kwargs):
         # 1. 하루에 1개의 예약만 가능하게끔 - V
         # 2. 예약 인원 넘는 요청 불가하게 - V
+        # 3. schedule_pk 어디로 감 ?
         date = request.data.get("date", None)
         if date is not None:
             try:

@@ -10,7 +10,6 @@ from memberships.models import Membership
 class ReservationSerializer(serializers.ModelSerializer):
 
     schedule = ScheduleSerializer(read_only=True)
-    user = UserSerializer(read_only=True)
 
     class Meta:
         model = Reservation

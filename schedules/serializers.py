@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from users.serializers import UserSerializer
+from users.serializers import UserSerializer, CoachSerializer
 from .models import Schedule
 
 
@@ -8,6 +8,7 @@ class ScheduleSerializer(serializers.ModelSerializer):
     reservations_count = serializers.SerializerMethodField(
         method_name="get_reservations_count"
     )
+    coach = CoachSerializer(read_only=True)
 
     def get_reservations_count(self, obj):
         date = self.context.get("date")

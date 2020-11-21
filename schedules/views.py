@@ -15,7 +15,7 @@ class ScheduleViewSet(ModelViewSet):
 
     def get_permissions(self):
         if self.action == "list" or self.action == "retrieve":
-            permission_classes = [AllowAny]
+            permission_classes = [IsAuthenticated]
         elif (
             self.action == "destroy"
             or self.action == "partial_update"
@@ -31,8 +31,11 @@ class ScheduleViewSet(ModelViewSet):
     # Override로 날짜 정보 넘겨주기
     def list(self, request, *args, **kwargs):
         date = request.GET.get("date", None)
+        # print(date)
         if date is not None:
-            schedules = Schedule.objects.filter(box=request.user.box)
+            schedules = Schedule.objects.filter(box=request.user.box).order_by(
+                "start_time"
+            )
             queryset = self.filter_queryset(schedules)
 
             page = self.paginate_queryset(queryset)
