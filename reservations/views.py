@@ -92,8 +92,9 @@ class ReservationViewSet(ModelViewSet):
     def create(self, request, *args, **kwargs):
         # 1. 하루에 1개의 예약만 가능하게끔 - V
         # 2. 예약 인원 넘는 요청 불가하게 - V
-        # 3. schedule_pk 어디로 감 ?
+        # 3. schedule_pk 어디로 감 ? - Serializer 쪽에
         date = request.data.get("date", None)
+
         if date is not None:
             try:
                 request.user.box.wods.get(date=date)
@@ -106,10 +107,13 @@ class ReservationViewSet(ModelViewSet):
                 except Reservation.DoesNotExist:
                     serializer = self.get_serializer(data=request.data)
                     serializer.is_valid()
+                    print(serializer.errors)
                     self.perform_create(serializer)
                     headers = self.get_success_headers(serializer.data)
                     return Response(
-                        serializer.data, status=status.HTTP_201_CREATED, headers=headers
+                        serializer.data,
+                        status=status.HTTP_201_CREATED,
+                        headers=headers,
                     )
             except Wod.DoesNotExist:
                 return Response(status=status.HTTP_404_NOT_FOUND)

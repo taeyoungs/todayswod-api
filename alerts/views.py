@@ -7,11 +7,18 @@ from .serializers import AlertSerializer
 from .permissions import IsBoxOwnerOrAdmin
 from users.models import User
 
+from rest_framework.pagination import PageNumberPagination
+
+
+class AlertPagination(PageNumberPagination):
+    page_size = 6
+
 
 class AlertViewSet(ModelViewSet):
 
     queryset = Alert.objects.all()
     serializer_class = AlertSerializer
+    pagination_class = AlertPagination
 
     def get_permissions(self):
         if self.action == "list" or self.action == "retrieve":
@@ -27,7 +34,7 @@ class AlertViewSet(ModelViewSet):
         # 사용자 전용 알림과 사용자가 속한 박스 알림만 QuerySet으로
         user_alerts = Alert.objects.filter(user=request.user)
         box_alerts = Alert.objects.filter(box=request.user.box)
-        alerts = user_alerts.union(box_alerts).order_by("-updated")
+        alerts = user_alerts.union(box_alerts).order_by("-datetime")
 
         queryset = self.filter_queryset(alerts)
 

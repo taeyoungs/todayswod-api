@@ -18,7 +18,8 @@ class Alert(CoreModel):
         max_length=20, choices=TYPE_CHOCIES, default=TYPE_NOTICE
     )
     title = models.CharField(max_length=40)
-    content = models.CharField(max_length=120)
+    content = models.TextField()
+    datetime = models.DateTimeField()
     user = models.ForeignKey(
         "users.User",
         on_delete=models.CASCADE,
