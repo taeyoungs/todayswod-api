@@ -1,9 +1,13 @@
 from rest_framework import serializers
 from .models import Membership
 from users.models import User
+from users.serializers import CoachSerializer
 
 
 class MembershipSerializer(serializers.ModelSerializer):
+
+    user = CoachSerializer(read_only=True)
+
     class Meta:
         model = Membership
         fields = (
@@ -14,6 +18,7 @@ class MembershipSerializer(serializers.ModelSerializer):
             "start_term",
             "end_term",
             "hold_date",
+            "hold_start",
             "user",
         )
         read_only_fields = (

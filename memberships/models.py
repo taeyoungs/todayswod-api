@@ -30,6 +30,7 @@ class Membership(CoreModel):
     start_term = models.DateField(null=True, blank=True)
     end_term = models.DateField(null=True, blank=True)
     hold_date = models.DateField(null=True, blank=True)
+    hold_start = models.DateField(null=True, blank=True)
     user = models.ForeignKey(
         "users.User", related_name="memberships", on_delete=models.CASCADE
     )

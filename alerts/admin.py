@@ -11,4 +11,5 @@ class AlertAdmin(admin.ModelAdmin):
         "content",
         "user",
         "box",
+        "datetime",
     )

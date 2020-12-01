@@ -45,16 +45,19 @@ class MembershipViewSet(ModelViewSet):
                 user=request.user,
             )
         """
+
         if instance.state == Membership.STATE_HOLDING:
             if instance.hold_date < now.date():
                 instance.state = Membership.STATE_PROGRESS
+                instance.hold_start = None
                 instance.hold_date = None
                 instance.save()
-        if instance.end_term < now.date():
-            instance.state = Membership.STATE_EXPIRED
-            instance.save()
-            request.user.registration_state = User.STATE_UNREGISTERED
-            request.user.save()
+        if instance.title == Membership.TITLE_TERM:
+            if instance.end_term < now.date():
+                instance.state = Membership.STATE_EXPIRED
+                instance.save()
+                request.user.registration_state = User.STATE_UNREGISTERED
+                request.user.save()
         serializer = self.get_serializer(instance)
         return Response(serializer.data)
 
@@ -66,10 +69,11 @@ class MembershipViewSet(ModelViewSet):
             if membership.title == "term":
                 # ex. term: 1, 2, 3, 4 ... 주 단위로
                 membership.state = Membership.STATE_HOLDING
-                membership.hold_date = membership.start_term + datetime.timedelta(
-                    days=6
+                membership.hold_start = timezone.now().date()
+                membership.hold_date = timezone.now().date() + datetime.timedelta(
+                    days=int(term) * 6
                 )
-                membership.start_term += datetime.timedelta(days=int(term) * 7)
+                # membership.start_term += datetime.timedelta(days=int(term) * 7)
                 membership.end_term += datetime.timedelta(days=int(term) * 7)
                 membership.save()
                 return Response(status=status.HTTP_200_OK)
