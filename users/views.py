@@ -2,6 +2,7 @@ import jwt
 import requests
 import os
 from random import randrange
+from django.utils import timezone
 from django.conf import settings
 from django.contrib.auth import authenticate
 from rest_framework import status
@@ -12,7 +13,10 @@ from rest_framework.permissions import IsAuthenticated, AllowAny, IsAdminUser
 from .serializers import UserSerializer
 from .permissions import IsSelf
 from .models import User
+from reservations.models import Reservation
 from boxes.models import Box
+from boxes.serializers import BoxSerializer
+from memberships.models import Membership
 from alerts.permissions import IsBoxOwnerOrAdmin
 
 
@@ -35,6 +39,20 @@ class UserViewSet(ModelViewSet):
         else:
             permission_classes = [IsSelf]
         return [permission() for permission in permission_classes]
+
+    def create(self, request, *args, **kwargs):
+        email = request.data.get("email", None)
+        try:
+            user = User.objects.get(email=email)
+            return Response(status=status.HTTP_409_CONFLICT)
+        except User.DoesNotExist:
+            serializer = self.get_serializer(data=request.data)
+            serializer.is_valid(raise_exception=True)
+            self.perform_create(serializer)
+            headers = self.get_success_headers(serializer.data)
+            return Response(
+                serializer.data, status=status.HTTP_201_CREATED, headers=headers
+            )
 
     def list(self, request, *args, **kwargs):
 
@@ -69,31 +87,25 @@ class UserViewSet(ModelViewSet):
         username = request.data.get("username", None)
         password = request.data.get("password", None)
         if username is not None and password is not None:
-            user = authenticate(username=username, password=password)
-            if user is not None:
-                encoded_jwt = jwt.encode(
-                    {"pk": user.pk}, settings.SECRET_KEY, algorithm="HS256"
-                )
-                if user.box is None:
+            try:
+                u = User.objects.get(username=username)
+                user = authenticate(username=username, password=password)
+                if user is not None:
+                    encoded_jwt = jwt.encode(
+                        {"pk": user.pk}, settings.SECRET_KEY, algorithm="HS256"
+                    )
+                    serialized_user = self.get_serializer(user).data
                     return Response(
                         data={
                             "token": encoded_jwt,
                             "userId": user.pk,
-                            "boxId": user.box,
-                            "registrationState": user.registration_state,
+                            "user": serialized_user,
                         }
                     )
                 else:
-                    return Response(
-                        data={
-                            "token": encoded_jwt,
-                            "userId": user.pk,
-                            "boxId": user.box.pk,
-                            "registrationState": user.registration_state,
-                        }
-                    )
-            else:
-                return Response(status=status.HTTP_401_UNAUTHORIZED)
+                    return Response(status=status.HTTP_401_UNAUTHORIZED)
+            except User.DoesNotExist:
+                return Response(status=status.HTTP_404_NOT_FOUND)
         else:
             return Response(status=status.HTTP_400_BAD_REQUEST)
 
@@ -108,10 +120,23 @@ class UserViewSet(ModelViewSet):
                 if box is not None:
                     user = request.user
                     user.box = box
-                    user.registration_state = User.STATE_PENDING
                     user.save()
-                    # print(user.box)
-                    return Response(status=status.HTTP_200_OK, data={"boxId": box.pk})
+                    m = Membership.objects.filter(user__box=box, user=user)
+                    print(m)
+                    if m.count == 0:
+                        # 등록한 박스에 회원권이 존재하지 않는 경우
+                        user.registration_state = User.STATE_PENDING
+                    else:
+                        user.registration_state = User.STATE_REGISTERED
+                    user.save()
+                    serialized_box = BoxSerializer(box).data
+                    return Response(
+                        status=status.HTTP_200_OK,
+                        data={
+                            "box": serialized_box,
+                            "registrationState": user.registration_state,
+                        },
+                    )
             except Box.DoesNotExist:
                 return Response(status=status.HTTP_404_NOT_FOUND)
         else:
@@ -199,3 +224,19 @@ class UserViewSet(ModelViewSet):
                 return Response(status=status.HTTP_404_NOT_FOUND)
         else:
             return Response(status=status.HTTP_400_BAD_REQUEST)
+
+    @action(detail=True, methods=["get"])
+    def revoke(self, request, pk):
+        user = self.get_object()
+        now = timezone.now()
+        if user is not None:
+            Reservation.objects.filter(date__gte=now.date(), user=user).delete()
+            user.box = None
+            user.registration_state = User.STATE_UNREGISTERED
+            user.save()
+            serialized_user = self.get_serializer(user).data
+
+            # ToDo: Box 변경에 따른 Alerts 삭제
+            return Response(status=status.HTTP_200_OK, data=serialized_user)
+        else:
+            return Response(status=status.HTTP_404_NOT_FOUND)

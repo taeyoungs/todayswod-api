@@ -9,6 +9,7 @@ from .serializers import ReservationSerializer
 from .models import Reservation
 from .permissions import IsSelf, IsSelfOrBoxOwnerOrAdminUser
 from wods.models import Wod
+from memberships.models import Membership
 from wods.permissions import IsBoxOwner
 from schedules.models import Schedule
 
@@ -119,6 +120,16 @@ class ReservationViewSet(ModelViewSet):
                 return Response(status=status.HTTP_404_NOT_FOUND)
         else:
             return Response(status=status.HTTP_400_BAD_REQUEST)
+
+    def destroy(self, request, *args, **kwargs):
+        user = request.user
+        membership = Membership.objects.get(user=user)
+        if membership.cnt is not None:
+            membership.cnt += 1
+            membership.save()
+        instance = self.get_object()
+        self.perform_destroy(instance)
+        return Response(status=status.HTTP_204_NO_CONTENT)
 
     @action(detail=False, methods=["get"])
     def expiration(self, request):

@@ -30,11 +30,6 @@ class ReservationSerializer(serializers.ModelSerializer):
             "schedule",
         )
 
-    def validate(self, data):
-
-        print(data)
-        return data
-
     def create(self, validated_data):
         request = self.context.get("request")
         schedule_pk = request.data.get("schedule_id")
@@ -82,7 +77,6 @@ class ReservationSerializer(serializers.ModelSerializer):
                             user_membership.state = Membership.STATE_EXPIRED
                         user_membership.cnt -= 1
                         user_membership.save()
-                    print(reservation)
                     return reservation
                 else:
                     raise serializers.ValidationError("예약 제한 인원 초과")

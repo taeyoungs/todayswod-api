@@ -14,7 +14,19 @@ class User(AbstractUser):
         (STATE_REGISTERED, "Registered"),
     )
 
-    gender = models.CharField(max_length=10)
+    GENDER_MALE = "male"
+    GENDER_FEMALE = "female"
+    GENDER_UNSELECTED = "unselected"
+
+    GENDER_CHOICES = (
+        (GENDER_MALE, "Male"),
+        (GENDER_FEMALE, "Female"),
+        (GENDER_UNSELECTED, "Unselected"),
+    )
+
+    gender = models.CharField(
+        max_length=10, choices=GENDER_CHOICES, default=GENDER_UNSELECTED
+    )
     box = models.ForeignKey(
         "boxes.Box",
         on_delete=models.SET_NULL,

@@ -28,7 +28,6 @@ class UserSerializer(serializers.ModelSerializer):
         fields = (
             "id",
             "username",
-            "first_name",
             "last_name",
             "email",
             "password",
@@ -39,6 +38,7 @@ class UserSerializer(serializers.ModelSerializer):
         )
         read_only_fields = (
             "id",
+            "username",
             "created",
             "updated",
             "box",
