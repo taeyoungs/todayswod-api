@@ -26,9 +26,6 @@ SECRET_KEY = os.environ.get("DJANGO_SECRET_KEY")
 DEBUG = True
 
 ALLOWED_HOSTS = [
-    "172.20.10.3",
-    "192.168.0.25",
-    "172.16.35.111",
     "127.0.0.1",
 ]
 

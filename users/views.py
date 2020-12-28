@@ -42,6 +42,7 @@ class UserViewSet(ModelViewSet):
 
     def create(self, request, *args, **kwargs):
         email = request.data.get("email", None)
+
         try:
             user = User.objects.get(email=email)
             return Response(status=status.HTTP_409_CONFLICT)
@@ -122,8 +123,8 @@ class UserViewSet(ModelViewSet):
                     user.box = box
                     user.save()
                     m = Membership.objects.filter(user__box=box, user=user)
-                    print(m)
-                    if m.count == 0:
+
+                    if m.count() == 0:
                         # 등록한 박스에 회원권이 존재하지 않는 경우
                         user.registration_state = User.STATE_PENDING
                     else:
@@ -171,19 +172,19 @@ class UserViewSet(ModelViewSet):
                 user = User.objects.get(username=email)
                 user.certification_number = certification_number
                 user.save()
-                # results = requests.post(
-                #     "https://api.mailgun.net/v3/sandbox84ef292259734d5baaa226547f1981b4.mailgun.org/messages",
-                #     auth=("api", os.environ.get("MAILGUN_API_KEY")),
-                #     data={
-                #         "from": "오늘의 와드 <mailgun@sandbox84ef292259734d5baaa226547f1981b4.mailgun.org>",
-                #         "to": [
-                #             email,
-                #         ],
-                #         "subject": "비밀번호 재설정 인증번호",
-                #         "text": f"인증번호: {certification_number}",
-                #     },
-                # )
-                # print(results)
+                results = requests.post(
+                    "https://api.mailgun.net/v3/sandbox84ef292259734d5baaa226547f1981b4.mailgun.org/messages",
+                    auth=("api", os.environ.get("MAILGUN_API_KEY")),
+                    data={
+                        "from": "오늘의 와드 <mailgun@sandbox84ef292259734d5baaa226547f1981b4.mailgun.org>",
+                        "to": [
+                            email,
+                        ],
+                        "subject": "비밀번호 재설정 인증번호",
+                        "text": f"인증번호: {certification_number}",
+                    },
+                )
+
                 return Response(status=status.HTTP_200_OK)
             except User.DoesNotExist:
                 return Response(status=status.HTTP_404_NOT_FOUND)
@@ -196,15 +197,13 @@ class UserViewSet(ModelViewSet):
         certification_number = request.data.get("certification_number", None)
         email = request.data.get("email", None)
 
-        print(certification_number, email)
-
         if certification_number is not None and email is not None:
             user = User.objects.get(username=email)
             if user.certification_number != int(certification_number):
                 return Response(status=status.HTTP_401_UNAUTHORIZED)
             else:
-                # user.certification_number = None
-                # user.save()
+                user.certification_number = None
+                user.save()
                 return Response(status=status.HTTP_200_OK)
         else:
             return Response(status=status.HTTP_400_BAD_REQUEST)
